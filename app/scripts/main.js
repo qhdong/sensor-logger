@@ -56,6 +56,10 @@ $(function () {
 
         if (pinsCount == totalPins) {
           $('#pin-input').attr('disabled', 'disabled').unbind('GET_PIN');
+          socket.emit('log-complete', {
+            sampleID: config.sampleID,
+            username: config.username
+          });
           $('#overModal').modal('show');
           $('#enter-again-btn').click(e => {
             window.location.reload();
