@@ -59,7 +59,8 @@ $(function () {
           socket.emit('log-complete', {
             sampleID: config.sampleID,
             username: config.username,
-            pinsCount: pinsCount
+            pinsCount: pinsCount,
+            usparser: new UAParser().getResult(),
           });
           $('#overModal').modal('show');
           $('#enter-again-btn').click(e => {
