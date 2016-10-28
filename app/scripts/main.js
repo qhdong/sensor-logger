@@ -8,9 +8,11 @@ $(function () {
     sampleID: new Date().getTime()
   };
 
+  let uaparser = new UAParser();
+
   let socket = io.connect(config.serverURL);
   socket.on('connect_error', () => {
-    console.error('can not connect to server');
+    alert('can not connect to server');
   });
 
   socket.on('rollback-complete', () => {
@@ -20,6 +22,7 @@ $(function () {
 
   getPinsFromServer(config.pinURL)
     .then((pins) => {
+      config.pinsCount = pins.length;
       startup();
       console.log(pins);
       getPinsFromUser(pins);
@@ -56,12 +59,7 @@ $(function () {
 
         if (pinsCount == totalPins) {
           $('#pin-input').attr('disabled', 'disabled').unbind('GET_PIN');
-          socket.emit('log-complete', {
-            sampleID: config.sampleID,
-            username: config.username,
-            pinsCount: pinsCount,
-            usparser: new UAParser().getResult(),
-          });
+          sendSuccessMessage();
           $('#overModal').modal('show');
           $('#enter-again-btn').click(e => {
             window.location.reload();
@@ -91,6 +89,15 @@ $(function () {
           config.username = username;
         }
       });
+  }
+
+  function sendSuccessMessage() {
+    socket.emit('log-complete', {
+      sampleID: config.sampleID,
+      username: config.username,
+      pinsCount: config.pinsCount,
+      UAParser: uaparser.getResult(),
+    });
   }
 
   /**
