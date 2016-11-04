@@ -2,8 +2,8 @@ $(function () {
   'use strict';
 
   let config = {
-    pinURL: 'http://115.159.83.89:8080/pin',
-    serverURL: 'http://115.159.83.89:8080',
+    pinURL: 'http://115.159.83.89:1918/pin',
+    serverURL: 'http://115.159.83.89:1918',
     username: 'Anonymous',
     sampleID: new Date().getTime()
   };
