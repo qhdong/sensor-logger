@@ -5,7 +5,8 @@ $(function () {
     pinURL: 'http://115.159.83.89:1918/pin',
     serverURL: 'http://115.159.83.89:1918',
     username: 'Anonymous',
-    sampleID: new Date().getTime()
+    sampleID: new Date().getTime(),
+    pinLength: 1
   };
 
   let uaparser = new UAParser();
@@ -20,14 +21,22 @@ $(function () {
     console.log('Receive Message: rollback complete! Add sensor listener');
   });
 
+  /**
+   * 从服务器获取PIN码
+   */
   getPinsFromServer(config.pinURL)
     .then((pins) => {
       config.pinsCount = pins.length;
+      config.pinLength = pins[0].length;
       startup();
       console.log(pins);
       getPinsFromUser(pins);
   });
 
+  /**
+   * 从用户获取输入的PIN，并负责交互
+   * @param pins
+   */
   function getPinsFromUser(pins) {
     const totalPins = pins.length;
     $('#pin-total').text(totalPins);
@@ -36,6 +45,7 @@ $(function () {
     let pinsCount = 0;
     $('#pin').text(currentPin);
     $('#pin-input').bind('GET_PIN', function (event) {
+      // 当用户输错PIN时，通知服务器撤回该错误PIN码的记录
       if (event.target.value != currentPin) {
         event.target.value = '';
         $('#pin-form').addClass('has-error');
@@ -73,8 +83,15 @@ $(function () {
     detectBrowser();
     showStartupModel();
 
-    $('#pin-input').keyup(event => {
-      if (event.target.value.length == 4) {
+    var pinInput = $('#pin-input');
+    pinInput
+      .attr('maxlength', config.pinLength)
+      .attr('minlength', config.pinLength)
+      .attr('pattern', '\d{' + config.pinLength + '}')
+      .attr('placeholder', 'Enter ' + config.pinLength + ' digit PIN.');
+
+    pinInput.keyup(event => {
+      if (event.target.value.length == config.pinLength) {
         $('#pin-input').trigger('GET_PIN', event);
       }
     });
