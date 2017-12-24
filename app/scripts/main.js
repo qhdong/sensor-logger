@@ -1,7 +1,7 @@
 $(function () {
   'use strict';
 
-  let config = {
+  var config = {
     pinURL: 'http://115.159.83.89:1918/pin',
     serverURL: 'http://115.159.83.89:1918',
     username: 'Anonymous',
