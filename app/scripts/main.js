@@ -11,18 +11,20 @@ $(function () {
 
   let uaparser = new UAParser();
 
+  // 建立WebSocket，与服务端交互
   let socket = io.connect(config.serverURL);
   socket.on('connect_error', () => {
     alert('can not connect to server');
   });
 
+  // 确认服务端已经rollback错误的PIN码数据，重新监听动作传感器
   socket.on('rollback-complete', () => {
     addSensorListener();
     console.log('Receive Message: rollback complete! Add sensor listener');
   });
 
   /**
-   * 从服务器获取PIN码
+   * 从服务器获取PIN码，启动整个应用程序
    */
   getPinsFromServer(config.pinURL)
     .then((pins) => {
@@ -43,19 +45,26 @@ $(function () {
 
     let currentPin = pins.pop();
     let pinsCount = 0;
+    // 每一个PIN都对应一个sampleID，即使输错需要撤销，也只会删除当前的PIN
+    config.sampleID = new Date().getTime();
     $('#pin').text(currentPin);
     $('#pin-input').bind('GET_PIN', function (event) {
       // 当用户输错PIN时，通知服务器撤回该错误PIN码的记录
       if (event.target.value != currentPin) {
+        // 在服务端rollback成功之前不监听动作数据
+        removeSensorListener();
+
         event.target.value = '';
         $('#pin-form').addClass('has-error');
         $('.form-control-feedback').removeClass('hidden');
+
+        // 通知服务端，rollback错误数据
         socket.emit('rollback', {
           'pin': currentPin,
           'sampleID': config.sampleID
         });
-        removeSensorListener();
         console.log('Wrong PIN! Send rollback message! Remove sensor listener');
+
       } else {
         event.target.value = '';
         $('#pin-form').removeClass('has-error');
@@ -63,10 +72,15 @@ $(function () {
 
         currentPin = pins.pop();
         pinsCount += 1;
+        // 每一个PIN都对应一个sampleID，即使输错需要撤销，也只会删除当前的PIN
+        config.sampleID = new Date().getTime();
+
+        // 更新进度信息
         $('#pin-progress').css('width', pinsCount/totalPins * 100 + '%');
         $('#pin').text(currentPin);
         $('#pin-count').text(pinsCount);
 
+        // 完成所有输入任务后的逻辑
         if (pinsCount == totalPins) {
           $('#pin-input').attr('disabled', 'disabled').unbind('GET_PIN');
           sendSuccessMessage();
@@ -90,6 +104,7 @@ $(function () {
       .attr('pattern', '\d{' + config.pinLength + '}')
       .attr('placeholder', 'Enter ' + config.pinLength + ' digit PIN.');
 
+    // 如果输完要求位数的PIN码，触发GET_PIN事件
     pinInput.keyup(event => {
       if (event.target.value.length == config.pinLength) {
         $('#pin-input').trigger('GET_PIN', event);
@@ -97,6 +112,9 @@ $(function () {
     });
   }
 
+  /**
+   * 在启动时显示对话框，采集用户名
+   */
   function showStartupModel() {
     $('#startupModal')
       .modal('show')
