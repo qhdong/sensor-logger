@@ -215,7 +215,7 @@ $(function () {
       'username': config.username,
       'sampleID': config.sampleID,
       'pin': pin,
-      'key': pin[keyIndex],
+      'keyIndex': keyIndex,
       'time': new Date(),
       'data': data
     });
