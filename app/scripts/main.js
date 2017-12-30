@@ -89,6 +89,7 @@ $(function () {
 
         // 完成所有输入任务后的逻辑
         if (pinsCount == totalPins) {
+          removeSensorListener();
           $('#pin-input').attr('disabled', 'disabled').unbind('GET_PIN');
           sendSuccessMessage();
           $('#overModal').modal('show');
