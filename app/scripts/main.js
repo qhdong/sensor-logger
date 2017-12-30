@@ -69,6 +69,9 @@ $(function () {
         console.log('Wrong PIN! Send rollback message! Remove sensor listener');
 
       } else {
+        // 成功输入一个PIN，暂时不监听sensor数据
+        removeSensorListener()
+
         event.target.value = '';
         $('#pin-form').removeClass('has-error');
         $('.form-control-feedback').addClass('hidden');
@@ -93,11 +96,18 @@ $(function () {
             window.location.reload();
           });
         }
+
+        // 开始处理新的PIN
+        addSensorListener()
       }
     });
   }
 
+  /**
+   * 启动应用程序
+   */
   function startup() {
+    // 检测浏览器是否支持传感器
     detectBrowser();
     showStartupModel();
 
@@ -200,11 +210,12 @@ $(function () {
   }
 
   function sendDataToServer(data) {
+    let pin = $('#pin').text();
     socket.emit('sensor', {
       'username': config.username,
       'sampleID': config.sampleID,
-      'pin': $('#pin').text(),
-      'key': currentPin[keyIndex],
+      'pin': pin,
+      'key': pin[keyIndex],
       'time': new Date(),
       'data': data
     });
