@@ -39,6 +39,18 @@ $(function () {
   });
 
   /**
+   * 通知服务端，rollback错误数据
+   * @param {*} sampleID 
+   * @param {*} pin 
+   */
+  function rollback(sampleID, pin) {
+    socket.emit('rollback', {
+      'pin': pin,
+      'sampleID': sampleID
+    });
+    console.log('Wrong PIN: %s for sampleID: %s! Send rollback message!', pin, sampleID);
+  }
+  /**
    * 从用户获取输入的PIN，并负责交互
    * @param pins
    */
@@ -62,12 +74,7 @@ $(function () {
         $('.form-control-feedback').removeClass('hidden');
 
         // 通知服务端，rollback错误数据
-        socket.emit('rollback', {
-          'pin': currentPin,
-          'sampleID': config.sampleID
-        });
-        console.log('Wrong PIN! Send rollback message! Remove sensor listener');
-
+        rollback(config.sampleID, currentPin);
       } else {
         // 成功输入一个PIN，暂时不监听sensor数据
         removeSensorListener()
@@ -90,6 +97,10 @@ $(function () {
         // 完成所有输入任务后的逻辑
         if (pinsCount == totalPins) {
           removeSensorListener();
+
+          // 删除最后一次的重复数据
+          rollback(config.sampleID, currentPin);
+
           $('#pin-input').attr('disabled', 'disabled').unbind('GET_PIN');
           sendSuccessMessage();
           $('#overModal').modal('show');
