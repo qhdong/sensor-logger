@@ -23,6 +23,9 @@ $(function () {
     console.log('Receive Message: rollback complete! Add sensor listener');
   });
 
+  // 当前输入的是PIN中的第几个数字
+  var keyIndex = 0;
+
   /**
    * 从服务器获取PIN码，启动整个应用程序
    */
@@ -70,6 +73,7 @@ $(function () {
         $('#pin-form').removeClass('has-error');
         $('.form-control-feedback').addClass('hidden');
 
+        keyIndex = 0;
         currentPin = pins.pop();
         pinsCount += 1;
         // 每一个PIN都对应一个sampleID，即使输错需要撤销，也只会删除当前的PIN
@@ -106,6 +110,7 @@ $(function () {
 
     // 如果输完要求位数的PIN码，触发GET_PIN事件
     pinInput.keyup(event => {
+      keyIndex += 1;
       if (event.target.value.length == config.pinLength) {
         $('#pin-input').trigger('GET_PIN', event);
       }
@@ -199,6 +204,7 @@ $(function () {
       'username': config.username,
       'sampleID': config.sampleID,
       'pin': $('#pin').text(),
+      'key': currentPin[keyIndex],
       'time': new Date(),
       'data': data
     });
